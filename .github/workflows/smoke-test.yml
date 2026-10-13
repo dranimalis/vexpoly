@@ -1,0 +1,70 @@
+name: Smoke test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  import-and-headless-init:
+    name: Import check (${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.11", "3.12"]
+
+    env:
+      SDL_VIDEODRIVER: dummy
+      SDL_AUDIODRIVER: dummy
+      PYGAME_HIDE_SUPPORT_PROMPT: "1"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Compile all sources
+        run: python -m compileall -q vexpoly.py
+
+      - name: Import module and initialise pygame headlessly
+        run: |
+          python - <<'PY'
+          import os
+          os.environ["SDL_VIDEODRIVER"] = "dummy"
+          os.environ["SDL_AUDIODRIVER"] = "dummy"
+
+          import pygame
+          pygame.init()
+          pygame.display.set_mode((960, 600))
+
+          import vexpoly as game
+          assert hasattr(game, "VERSION"), "no VERSION constant"
+          assert hasattr(game, "Game"),    "no Game class"
+          print("OK - VEXPOLY", game.VERSION, "imports cleanly")
+
+          screen = pygame.display.get_surface()
+          game.Game(screen)
+          print("OK - Game constructed")
+
+          pygame.quit()
+          PY
+
+      - name: Verify assets are present
+        run: |
+          test -d assets/textures || (echo "assets/textures missing" && exit 1)
+          test -d assets/sounds   || (echo "assets/sounds missing"   && exit 1)
+          test -d assets/ui       || (echo "assets/ui missing"       && exit 1)
+          count=$(find assets -type f | wc -l)
+          echo "Found $count asset files"
+          test "$count" -ge 20 || (echo "assets folder looks incomplete" && exit 1)

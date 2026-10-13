@@ -1,0 +1,55 @@
+# ---- user data ----------------------------------------------------------
+vexpoly_save.json
+arena_save.json
+
+# ---- python -------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+build/
+dist/
+wheels/
+pip-wheel-metadata/
+.venv/
+venv/
+env/
+ENV/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.coverage
+.coverage.*
+htmlcov/
+*.cover
+
+# ---- editors ------------------------------------------------------------
+.vscode/
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+.\#*
+\#*\#
+
+# ---- os -----------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ---- misc ---------------------------------------------------------------
+*.log
+*.tmp
+*.bak
+.cache/

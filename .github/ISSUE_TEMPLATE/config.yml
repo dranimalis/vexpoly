@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or help
+    url: https://github.com/dranimalis/vexpoly/discussions
+    about: Ask questions and get help with running or modding the game.
+  - name: Show off your run
+    url: https://github.com/dranimalis/vexpoly/discussions
+    about: Post screenshots, high scores, and clips in Discussions.

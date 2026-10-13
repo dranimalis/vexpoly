@@ -1,10 +1,8 @@
-# VEXPOLY
-
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)"  srcset="docs/logo-dark.svg">
-    <source media="(prefers-color-scheme: light)" srcset="docs/logo-light.svg">
-    <img src="docs/logo-dark.svg" alt="VEXPOLY" width="420">
+    <source media="(prefers-color-scheme: dark)"  srcset="docs/logo-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/logo-light.png">
+    <img src="docs/logo-dark.png" alt="VEXPOLY" width="420">
   </picture>
 </p>
 
@@ -17,14 +15,20 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3.8%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.8+">
-  <img src="https://img.shields.io/badge/Rendering-Software-555555?style=flat-square" alt="Software rendering">
-  <img src="https://img.shields.io/badge/Engine-Custom-222222?style=flat-square" alt="Custom engine">
-  <img src="https://img.shields.io/badge/License-MIT-D9C15A?style=flat-square" alt="MIT License">
+    <a href="https://sociabuzz.com/dr_animalis/give">
+    <img src="https://img.shields.io/badge/Support-VEXPOLY-8EF4FF?style=flat-square" alt="Support VEXPOLY">
+    </a>
+  <img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.9+">
+  <img src="https://img.shields.io/badge/Rendering-Software-2E93D6?style=flat-square" alt="Software rendering">
+  <img src="https://img.shields.io/badge/Engine-Custom-0F4A8A?style=flat-square" alt="Custom engine">
+  <img src="https://img.shields.io/badge/License-MIT-8EF4FF?style=flat-square" alt="MIT License">
+</p>
+
+<p align="center">
+  <img src="docs/hero.gif" alt="VEXPOLY gameplay" width="720">
 </p>
 
 ---
-
 ## Overview
 
 **VEXPOLY** is an experimental first-person arena shooter that explores a simple question:
@@ -78,7 +82,7 @@ In Survival mode, bosses appear every fifth wave and introduce ground-slam attac
 |---|---|
 | **Survival** | Survive increasingly difficult enemy waves and defeat periodic bosses. |
 | **Endless** | Keep fighting for as long as possible. |
-| **Time Attack** | Maximize your score against the clock. |
+| **Time Attack** | Eliminate 40 enemies as quickly as possible. Your time is the score. |
 
 ### Arena themes
 
@@ -213,7 +217,7 @@ Actual performance depends on CPU speed, screen resolution, scene complexity, an
 
 ### Requirements
 
-- Python 3.8 or newer.
+- Python 3.9 or newer.
 - `pygame-ce` 2.5 or newer, recommended.
 - Alternatively, Pygame 2.0 or newer, if supported by your checkout.
 
@@ -222,11 +226,9 @@ VEXPOLY uses the standard `pygame` import interface. No separate game engine, gr
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/vexpoly.git
+git clone https://github.com/dranimalis/vexpoly.git
 cd vexpoly
 ```
-
-Replace `YOUR_USERNAME` with the GitHub account or organization hosting the repository.
 
 ### 2. Create a virtual environment
 
@@ -254,7 +256,7 @@ pip install -r requirements.txt
 ### 4. Launch the game
 
 ```bash
-python arena_fps.py
+python vexpoly.py
 ```
 
 That's it. The repository includes the game's bundled assets, so no separate asset download is required.
@@ -313,7 +315,7 @@ Settings and records are stored locally in `vexpoly_save.json`. Keep generated s
 
 ```text
 vexpoly/
-├── arena_fps.py
+├── vexpoly.py
 ├── requirements.txt
 ├── README.md
 ├── LICENSE
@@ -332,7 +334,7 @@ vexpoly/
         └── lens_dirt.png
 ```
 
-The renderer, gameplay logic, interface, and audio systems currently live in `arena_fps.py`. This single-file structure keeps the project easy to run while leaving room for future modularization.
+The renderer, gameplay logic, interface, and audio systems currently live in `vexpoly.py`. This single-file structure keeps the project easy to run while leaving room for future modularization.
 
 The local `vexpoly_save.json` file is generated at runtime and should be excluded from version control.
 
@@ -353,7 +355,7 @@ For a manageable starting point, browse the [`good first issue`](../../labels/go
 Before submitting a pull request, launch the game and verify the affected functionality:
 
 ```bash
-python arena_fps.py
+python vexpoly.py
 ```
 
 For rendering changes, also check for visual artifacts, incorrect clipping, and unexpected performance regressions.
@@ -388,9 +390,7 @@ Review the repository's asset documentation for any additional third-party attri
 ---
 
 <p align="center">
-  <strong>VEXPOLY</strong>
-  <br>
-  <sub>SOFTWARE-RENDERED ARENA COMBAT</sub>
-  <br><br>
+  <strong>VEXPOLY</strong><br>
+  <em>Software-rendered arena combat</em><br><br>
   <code>NO ENGINE. NO SHORTCUTS. JUST POLYGONS.</code>
 </p>
