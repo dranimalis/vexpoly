@@ -29,8 +29,48 @@ jobs:
 
       - name: Build icon
         run: |
-          chmod +x build-icon.sh
-          ./build-icon.sh
+          # Write the SVG inline so we don't depend on a committed file.
+          cat > icon.svg <<'SVG'
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+            <defs>
+              <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#141C2E"/>
+                <stop offset="1" stop-color="#06090F"/>
+              </linearGradient>
+              <radialGradient id="top" cx="0.5" cy="0.12" r="0.65">
+                <stop offset="0" stop-color="#8EF4FF" stop-opacity="0.20"/>
+                <stop offset="1" stop-color="#8EF4FF" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <rect x="100" y="100" width="824" height="824" rx="185" ry="185" fill="url(#bg)"/>
+            <rect x="100" y="100" width="824" height="824" rx="185" ry="185" fill="url(#top)"/>
+            <g transform="translate(212 212) scale(6)">
+              <polygon points="50,8 8,68 50,52" fill="#8EF4FF"/>
+              <polygon points="50,8 50,52 92,68" fill="#4FB8F0"/>
+              <polygon points="8,68 50,92 50,52" fill="#1E5FA8"/>
+              <polygon points="50,52 92,68 50,92" fill="#0E3C7A"/>
+            </g>
+          </svg>
+          SVG
+
+          # Rasterize to 1024x1024
+          rsvg-convert -w 1024 -h 1024 icon.svg -o icon-1024.png
+
+          # Build the .iconset macOS expects
+          rm -rf vexpoly.iconset
+          mkdir -p vexpoly.iconset
+          sips -z 16 16     icon-1024.png --out vexpoly.iconset/icon_16x16.png      >/dev/null
+          sips -z 32 32     icon-1024.png --out vexpoly.iconset/icon_16x16@2x.png   >/dev/null
+          sips -z 32 32     icon-1024.png --out vexpoly.iconset/icon_32x32.png      >/dev/null
+          sips -z 64 64     icon-1024.png --out vexpoly.iconset/icon_32x32@2x.png   >/dev/null
+          sips -z 128 128   icon-1024.png --out vexpoly.iconset/icon_128x128.png    >/dev/null
+          sips -z 256 256   icon-1024.png --out vexpoly.iconset/icon_128x128@2x.png >/dev/null
+          sips -z 256 256   icon-1024.png --out vexpoly.iconset/icon_256x256.png    >/dev/null
+          sips -z 512 512   icon-1024.png --out vexpoly.iconset/icon_256x256@2x.png >/dev/null
+          sips -z 512 512   icon-1024.png --out vexpoly.iconset/icon_512x512.png    >/dev/null
+          cp                icon-1024.png   vexpoly.iconset/icon_512x512@2x.png
+          iconutil -c icns vexpoly.iconset -o vexpoly.icns
+          ls -lh vexpoly.icns
 
       - name: Build .app
         run: |
