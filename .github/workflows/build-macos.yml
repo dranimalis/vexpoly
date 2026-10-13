@@ -29,7 +29,6 @@ jobs:
 
       - name: Build icon
         run: |
-          # Write the SVG inline so we don't depend on a committed file.
           cat > icon.svg <<'SVG'
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
             <defs>
@@ -53,10 +52,8 @@ jobs:
           </svg>
           SVG
 
-          # Rasterize to 1024x1024
           rsvg-convert -w 1024 -h 1024 icon.svg -o icon-1024.png
 
-          # Build the .iconset macOS expects
           rm -rf vexpoly.iconset
           mkdir -p vexpoly.iconset
           sips -z 16 16     icon-1024.png --out vexpoly.iconset/icon_16x16.png      >/dev/null
@@ -88,7 +85,7 @@ jobs:
 
       - name: Zip
         run: |
-          cd distruns-on: macos-latest
+          cd dist
           zip -r VEXPOLY-macos.zip VEXPOLY.app
 
       - name: Upload
