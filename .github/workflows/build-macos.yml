@@ -1,0 +1,60 @@
+name: Build macOS app
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build VEXPOLY.app
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Install librsvg
+        run: brew install librsvg
+
+      - name: Build icon
+        run: |
+          chmod +x build-icon.sh
+          ./build-icon.sh
+
+      - name: Build .app
+        run: |
+          pyinstaller \
+            --onedir \
+            --windowed \
+            --add-data "assets:assets" \
+            --icon "vexpoly.icns" \
+            --name "VEXPOLY" \
+            --osx-bundle-identifier "com.dranimalis.vexpoly" \
+            vexpoly.py
+
+      - name: Ad-hoc sign
+        run: codesign --deep --force --sign - dist/VEXPOLY.app
+
+      - name: Zip
+        run: |
+          cd dist
+          zip -r VEXPOLY-macos.zip VEXPOLY.app
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: VEXPOLY-macos
+          path: dist/VEXPOLY-macos.zip
+          retention-days: 30

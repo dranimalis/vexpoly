@@ -65,9 +65,19 @@ ARENA, GROUND_HALF, TILE = 34.0, 52.0, 13.0
 GRAVITY, EYE_HEIGHT = 20.0, 1.70
 FOG_START, FOG_END = 12.0, 78.0
 SR = 22050
-ROOT = os.path.dirname(os.path.abspath(__file__))
+
+if getattr(sys, "frozen", False):
+    # Running inside a PyInstaller bundle.
+    ROOT = sys._MEIPASS
+    # Save file must go somewhere writable — the bundle is read-only.
+    _SAVE_DIR = os.path.join(os.path.expanduser("~"), ".vexpoly")
+    os.makedirs(_SAVE_DIR, exist_ok=True)
+    SETTINGS_PATH = os.path.join(_SAVE_DIR, "vexpoly_save.json")
+else:
+    ROOT = os.path.dirname(os.path.abspath(__file__))
+    SETTINGS_PATH = os.path.join(ROOT, "vexpoly_save.json")
+
 ASSETS = os.path.join(ROOT, "assets")
-SETTINGS_PATH = os.path.join(ROOT, "vexpoly_save.json")
 
 try:
     _SCALED = pygame.SCALED

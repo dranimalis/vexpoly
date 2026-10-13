@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#141C2E"/>
+      <stop offset="1" stop-color="#06090F"/>
+    </linearGradient>
+    <radialGradient id="top" cx="0.5" cy="0.12" r="0.65">
+      <stop offset="0" stop-color="#8EF4FF" stop-opacity="0.20"/>
+      <stop offset="1" stop-color="#8EF4FF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="edge" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.02"/>
+    </linearGradient>
+  </defs>
+
+  <!-- macOS squircle body -->
+  <rect x="100" y="100" width="824" height="824" rx="185" ry="185" fill="url(#bg)"/>
+  <rect x="100" y="100" width="824" height="824" rx="185" ry="185" fill="url(#top)"/>
+  <rect x="100.75" y="100.75" width="822.5" height="822.5" rx="184.25" ry="184.25"
+        fill="none" stroke="url(#edge)" stroke-width="1.5"/>
+
+  <!-- VEXPOLY shard, centered -->
+  <g transform="translate(212 212) scale(6)">
+    <polygon points="50,8 8,68 50,52" fill="#8EF4FF"/>
+    <polygon points="50,8 50,52 92,68" fill="#4FB8F0"/>
+    <polygon points="8,68 50,92 50,52" fill="#1E5FA8"/>
+    <polygon points="50,52 92,68 50,92" fill="#0E3C7A"/>
+  </g>
+</svg>
