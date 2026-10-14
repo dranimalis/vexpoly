@@ -29,10 +29,11 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
 
-      - name: Install dependencies
+      - name: Install project and dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          python -m pip install -e .
+          command -v vexpoly
 
       - name: Compile all sources
         run: python -m compileall -q vexpoly.py
@@ -50,7 +51,8 @@ jobs:
 
           import vexpoly as game
           assert hasattr(game, "VERSION"), "no VERSION constant"
-          assert hasattr(game, "Game"),    "no Game class"
+          assert hasattr(game, "Game"), "no Game class"
+          assert callable(getattr(game, "main", None)), "console entry point vexpoly:main is missing"
           print("OK - VEXPOLY", game.VERSION, "imports cleanly")
 
           screen = pygame.display.get_surface()
@@ -63,8 +65,8 @@ jobs:
       - name: Verify assets are present
         run: |
           test -d assets/textures || (echo "assets/textures missing" && exit 1)
-          test -d assets/sounds   || (echo "assets/sounds missing"   && exit 1)
-          test -d assets/ui       || (echo "assets/ui missing"       && exit 1)
+          test -d assets/sounds || (echo "assets/sounds missing" && exit 1)
+          test -d assets/ui || (echo "assets/ui missing" && exit 1)
           count=$(find assets -type f | wc -l)
           echo "Found $count asset files"
           test "$count" -ge 20 || (echo "assets folder looks incomplete" && exit 1)
