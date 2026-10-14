@@ -46,3 +46,31 @@ def test_texture_sampler_returns_expected_corner():
         [(0, 0, 255), (255, 255, 255)],
     ]
     assert game.sample_tex_bilinear([texture], 0.0, 0.0, 0.0) == (255.0, 0.0, 0.0)
+
+
+def test_user_data_dir_uses_platform_conventions():
+    assert game._get_user_data_dir(
+        home="/home/tester", platform="linux", environ={}
+    ) == "/home/tester/.local/share/vexpoly"
+    assert game._get_user_data_dir(
+        home="/home/tester",
+        platform="linux",
+        environ={"XDG_DATA_HOME": "/tmp/test-data"},
+    ) == "/tmp/test-data/vexpoly"
+    assert game._get_user_data_dir(
+        home="/Users/tester", platform="darwin", environ={}
+    ) == "/Users/tester/Library/Application Support/VEXPOLY"
+    assert game._get_user_data_dir(
+        home="C:/Users/tester",
+        platform="win32",
+        environ={"LOCALAPPDATA": "C:/Users/tester/AppData/Local"},
+    ) == "C:/Users/tester/AppData/Local/VEXPOLY"
+
+
+def test_user_data_dir_ignores_relative_xdg_path():
+    assert game._get_user_data_dir(
+        home="/home/tester",
+        platform="linux",
+        environ={"XDG_DATA_HOME": "relative/path"},
+    ) == "/home/tester/.local/share/vexpoly"
+
