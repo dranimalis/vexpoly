@@ -12,24 +12,16 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y \
-            libsdl2-dev \
-            libsdl2-image-dev \
-            libsdl2-mixer-dev \
-            libsdl2-ttf-dev \
-            libfuse2 \
-            wget
+          sudo apt-get install -y libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libfuse2 wget
 
       - name: Install Python dependencies
         run: |
@@ -44,7 +36,6 @@ jobs:
             --windowed \
             --name vexpoly \
             --add-data "assets:assets" \
-            --add-data "docs:docs" \
             --noconfirm \
             vexpoly.py
 
@@ -52,14 +43,9 @@ jobs:
         run: |
           mkdir -p AppDir/usr/bin
           mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
-
           cp dist/vexpoly AppDir/usr/bin/vexpoly
           chmod +x AppDir/usr/bin/vexpoly
-
-          cp docs/logo-mark-solid.png \
-             AppDir/usr/share/icons/hicolor/256x256/apps/vexpoly.png
-
-          # top-level icon (AppImage requirement)
+          cp docs/logo-mark-solid.png AppDir/usr/share/icons/hicolor/256x256/apps/vexpoly.png
           cp docs/logo-mark-solid.png AppDir/vexpoly.png
 
           cat > AppDir/vexpoly.desktop <<'EOF'
@@ -82,14 +68,11 @@ jobs:
 
       - name: Fetch appimagetool
         run: |
-          wget -q -O appimagetool \
-            https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          wget -q -O appimagetool https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
           chmod +x appimagetool
 
       - name: Build AppImage
-        run: |
-          ARCH=x86_64 ./appimagetool --no-appstream \
-            AppDir vexpoly-x86_64.AppImage
+        run: ARCH=x86_64 ./appimagetool --no-appstream AppDir vexpoly-x86_64.AppImage
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
