@@ -1,0 +1,68 @@
+name: Generate checksums
+
+on:
+  workflow_run:
+    workflows: ["Build macOS app", "Build Windows", "Build Linux"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sums:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Find latest release tag
+        id: tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG=$(gh release list --repo "${{ github.repository }}" --limit 1 --json tagName --jq '.[0].tagName')
+          if [ -z "$TAG" ]; then
+            echo "No releases found"
+            exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Using tag: $TAG"
+
+      - name: Download release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          mkdir -p assets
+          cd assets
+          gh release download "$TAG" \
+            --repo "${{ github.repository }}" \
+            --pattern "*" \
+            --skip-existing || true
+          ls -la
+
+      - name: Verify assets exist
+        run: |
+          cd assets
+          COUNT=$(ls -1 | grep -v '^SHA-256SUMS$' | wc -l)
+          echo "Found $COUNT asset files"
+          if [ "$COUNT" -eq 0 ]; then
+            echo "No assets found — builds may not have finished yet."
+            exit 1
+          fi
+
+      - name: Compute SHA-256
+        run: |
+          cd assets
+          rm -f SHA-256SUMS
+          find . -maxdepth 1 -type f ! -name 'SHA-256SUMS' \
+            -exec sha256sum {} \; | sed 's|^\./||' > ../SHA-256SUMS
+          cat ../SHA-256SUMS
+
+      - name: Upload checksums
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          gh release upload "$TAG" SHA-256SUMS \
+            --repo "${{ github.repository }}" \
+            --clobber
