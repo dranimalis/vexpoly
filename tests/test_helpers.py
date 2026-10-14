@@ -74,3 +74,32 @@ def test_user_data_dir_ignores_relative_xdg_path():
         environ={"XDG_DATA_HOME": "relative/path"},
     ) == "/home/tester/.local/share/vexpoly"
 
+
+def test_asset_resolver_finds_installed_data_directory(tmp_path):
+    source_root = tmp_path / "source"
+    install_prefix = tmp_path / "venv"
+    asset_dir = install_prefix / "assets"
+    (asset_dir / "ui").mkdir(parents=True)
+
+    resolved = game._resolve_assets_dir(
+        str(source_root),
+        prefix=str(install_prefix),
+        data_dir=str(tmp_path / "data"),
+        user_base=str(tmp_path / "user"),
+    )
+    assert resolved == str(asset_dir)
+
+
+def test_asset_resolver_prefers_source_assets(tmp_path):
+    source_root = tmp_path / "checkout"
+    source_assets = source_root / "assets"
+    source_assets.mkdir(parents=True)
+    (tmp_path / "venv" / "assets").mkdir(parents=True)
+
+    resolved = game._resolve_assets_dir(
+        str(source_root),
+        prefix=str(tmp_path / "venv"),
+        data_dir=str(tmp_path / "data"),
+        user_base=str(tmp_path / "user"),
+    )
+    assert resolved == str(source_assets)

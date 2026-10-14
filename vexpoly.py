@@ -72,7 +72,28 @@ if getattr(sys, "frozen", False):
 else:
     ROOT = os.path.dirname(os.path.abspath(__file__))
 
-ASSETS = os.path.join(ROOT, "assets")
+def _resolve_assets_dir(root, prefix=None, data_dir=None, user_base=None):
+    """Find bundled or installed assets across source, wheel, and user installs."""
+    import site
+    import sysconfig
+
+    prefix = sys.prefix if prefix is None else prefix
+    data_dir = sysconfig.get_path("data") if data_dir is None else data_dir
+    user_base = site.getuserbase() if user_base is None else user_base
+    candidates = [
+        os.path.join(root, "assets"),
+        os.path.join(prefix, "assets"),
+        os.path.join(data_dir, "assets") if data_dir else "",
+        os.path.join(user_base, "assets") if user_base else "",
+    ]
+    for candidate in candidates:
+        if candidate and os.path.isdir(candidate):
+            return candidate
+    # Preserve a meaningful default for error messages if assets are missing.
+    return candidates[0]
+
+
+ASSETS = _resolve_assets_dir(ROOT)
 
 
 def _get_user_data_dir(home=None, platform=None, environ=None):

@@ -41,3 +41,15 @@ py-modules = ["vexpoly"]
 
 [tool.setuptools.package-data]
 "*" = ["assets/**/*", "docs/**/*"]
+
+# Install runtime assets alongside the Python environment. The game searches
+# these locations when it is launched from an installed wheel.
+[tool.setuptools.data-files]
+"assets/sounds" = ["assets/sounds/*.wav"]
+"assets/ui" = ["assets/ui/*.png"]
+"assets/textures/_shared" = ["assets/textures/_shared/*.png"]
+"assets/textures/arctic" = ["assets/textures/arctic/*.png"]
+"assets/textures/crimson" = ["assets/textures/crimson/*.png"]
+"assets/textures/industrial" = ["assets/textures/industrial/*.png"]
+"assets/textures/toxic" = ["assets/textures/toxic/*.png"]
+"assets/textures/void" = ["assets/textures/void/*.png"]

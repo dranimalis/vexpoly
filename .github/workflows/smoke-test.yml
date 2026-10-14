@@ -65,6 +65,30 @@ jobs:
       - name: Run renderer helper tests
         run: python -m pytest -q
 
+      - name: Build wheel and verify packaged assets
+        run: |
+          python -m pip install build
+          python -m build --wheel
+          python - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+
+          wheels = list(Path("dist").glob("*.whl"))
+          assert len(wheels) == 1, f"expected one wheel, found {len(wheels)}"
+          with ZipFile(wheels[0]) as wheel:
+              files = wheel.namelist()
+          required = (
+              "assets/sounds/hit.wav",
+              "assets/ui/crosshair_0.png",
+              "assets/textures/industrial/floor.png",
+          )
+          for asset in required:
+              assert any(
+                  name.endswith(".data/data/" + asset) for name in files
+              ), f"{asset} missing from wheel"
+          print(f"OK - packaged runtime assets in {wheels[0].name}")
+          PY
+
       - name: Verify assets are present
         run: |
           test -d assets/textures || (echo "assets/textures missing" && exit 1)
