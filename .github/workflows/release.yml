@@ -1,0 +1,105 @@
+name: Build releases
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact_name: VEXPOLY-linux-x64
+            archive: VEXPOLY-linux-x64.tar.gz
+          - os: windows-latest
+            artifact_name: VEXPOLY-windows-x64
+            archive: VEXPOLY-windows-x64.zip
+          - os: macos-latest
+            artifact_name: VEXPOLY-macos
+            archive: VEXPOLY-macos.tar.gz
+
+    env:
+      SDL_VIDEODRIVER: dummy
+      SDL_AUDIODRIVER: dummy
+      PYGAME_HIDE_SUPPORT_PROMPT: "1"
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e . pytest pyinstaller
+
+      - name: Run final stability tests
+        run: |
+          python -m compileall -q vexpoly.py tests
+          python -m pytest -q
+
+      - name: Build standalone executable
+        run: pyinstaller --clean --noconfirm vexpoly.spec
+
+      - name: Verify executable exists (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: test -s dist/VEXPOLY
+
+      - name: Verify executable exists (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          if (!(Test-Path "dist/VEXPOLY.exe")) {
+            throw "PyInstaller did not produce dist/VEXPOLY.exe"
+          }
+          if ((Get-Item "dist/VEXPOLY.exe").Length -le 0) {
+            throw "dist/VEXPOLY.exe is empty"
+          }
+
+      - name: Archive executable (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: tar -czf "${{ matrix.archive }}" -C dist VEXPOLY
+
+      - name: Archive executable (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: Compress-Archive -Path "dist/VEXPOLY.exe" -DestinationPath "${{ matrix.archive }}"
+
+      - name: Upload platform archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.archive }}
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    name: Publish GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all platform archives
+        uses: actions/download-artifact@v4
+        with:
+          pattern: VEXPOLY-*
+          path: release-assets
+          merge-multiple: true
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: release-assets/*
