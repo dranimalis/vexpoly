@@ -67,17 +67,35 @@ FOG_START, FOG_END = 12.0, 78.0
 SR = 22050
 
 if getattr(sys, "frozen", False):
-    # Running inside a PyInstaller bundle.
+    # PyInstaller stores bundled, read-only resources under _MEIPASS.
     ROOT = sys._MEIPASS
-    # Save file must go somewhere writable — the bundle is read-only.
-    _SAVE_DIR = os.path.join(os.path.expanduser("~"), ".vexpoly")
-    os.makedirs(_SAVE_DIR, exist_ok=True)
-    SETTINGS_PATH = os.path.join(_SAVE_DIR, "vexpoly_save.json")
 else:
     ROOT = os.path.dirname(os.path.abspath(__file__))
-    SETTINGS_PATH = os.path.join(ROOT, "vexpoly_save.json")
 
 ASSETS = os.path.join(ROOT, "assets")
+
+
+def _get_user_data_dir(home=None, platform=None, environ=None):
+    """Return a per-user writable data directory without extra dependencies."""
+    home = os.path.expanduser("~") if home is None else home
+    platform = sys.platform if platform is None else platform
+    environ = os.environ if environ is None else environ
+
+    if platform == "win32":
+        base = environ.get("LOCALAPPDATA") or os.path.join(home, "AppData", "Local")
+        return os.path.join(base, "VEXPOLY")
+    if platform == "darwin":
+        return os.path.join(home, "Library", "Application Support", "VEXPOLY")
+
+    # Follow XDG when it is set to an absolute path; otherwise use its default.
+    xdg_data_home = environ.get("XDG_DATA_HOME", "")
+    base = xdg_data_home if os.path.isabs(xdg_data_home) else os.path.join(home, ".local", "share")
+    return os.path.join(base, "vexpoly")
+
+
+SETTINGS_PATH = os.path.join(_get_user_data_dir(), "vexpoly_save.json")
+# Older source checkouts and builds saved settings beside vexpoly.py.
+LEGACY_SETTINGS_PATH = os.path.join(ROOT, "vexpoly_save.json")
 
 try:
     _SCALED = pygame.SCALED
@@ -148,19 +166,29 @@ DEFAULT_SETTINGS = {
 S = dict(DEFAULT_SETTINGS)
 
 def load_settings():
+    settings_file = SETTINGS_PATH
+    if not os.path.isfile(settings_file) and os.path.isfile(LEGACY_SETTINGS_PATH):
+        # Read settings from older installs, then migrate them on save.
+        settings_file = LEGACY_SETTINGS_PATH
+
     try:
-        with open(SETTINGS_PATH) as f:
+        with open(settings_file, encoding="utf-8") as f:
             data = json.load(f)
         for k, v in DEFAULT_SETTINGS.items():
             S[k] = data.get(k, v)
-    except Exception:
+        if settings_file != SETTINGS_PATH:
+            save_settings()
+    except (OSError, ValueError, TypeError):
+        # Missing or invalid settings are handled by the defaults.
         pass
 
 def save_settings():
     try:
-        with open(SETTINGS_PATH, "w") as f:
+        os.makedirs(os.path.dirname(SETTINGS_PATH), exist_ok=True)
+        with open(SETTINGS_PATH, "w", encoding="utf-8") as f:
             json.dump(S, f, indent=2)
-    except Exception:
+    except OSError:
+        # Keep the game playable if the user's data directory is unavailable.
         pass
 
 # ===========================================================================
