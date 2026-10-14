@@ -1,14 +1,35 @@
 name: Build macOS app
 
 on:
+  release:
+    types: [published]
   push:
     branches: [main]
+    paths:
+      - "vexpoly.py"
+      - "requirements.txt"
+      - "assets/**"
+      - "docs/**"
+      - ".github/workflows/build-macos.yml"
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
-    name: Build VEXPOLY.app
-    runs-on: macos-15-intel
+    name: macOS ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15-intel
+            arch: x64
+            artifact: vexpoly-macos-x64.zip
+          - runner: macos-15
+            arch: arm64
+            artifact: vexpoly-macos-arm64.zip
 
     steps:
       - uses: actions/checkout@v4
@@ -83,14 +104,28 @@ jobs:
       - name: Ad-hoc sign
         run: codesign --deep --force --sign - dist/VEXPOLY.app
 
+      - name: Verify architecture
+        run: |
+          echo "Expected: ${{ matrix.arch }}"
+          file dist/VEXPOLY.app/Contents/MacOS/VEXPOLY
+          lipo -archs dist/VEXPOLY.app/Contents/MacOS/VEXPOLY
+
       - name: Zip
         run: |
           cd dist
-          zip -r VEXPOLY-macos.zip VEXPOLY.app
+          zip -r --symlinks "../${{ matrix.artifact }}" VEXPOLY.app
+          cd ..
+          ls -lh "${{ matrix.artifact }}"
 
-      - name: Upload
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: VEXPOLY-macos
-          path: dist/VEXPOLY-macos.zip
+          name: vexpoly-macos-${{ matrix.arch }}
+          path: ${{ matrix.artifact }}
           retention-days: 30
+
+      - name: Attach to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ matrix.artifact }}

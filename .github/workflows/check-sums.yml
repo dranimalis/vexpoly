@@ -1,0 +1,42 @@
+name: Generate checksums
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  sums:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          mkdir assets
+          cd assets
+          gh release download "$TAG" \
+            --repo "${{ github.repository }}" \
+            --pattern "*" \
+            --skip-existing || true
+          ls -la
+
+      - name: Compute SHA-256
+        run: |
+          cd assets
+          # remove any previous sums file so it isn't self-referential
+          rm -f SHA-256SUMS
+          sha256sum * > ../SHA-256SUMS
+          cat ../SHA-256SUMS
+
+      - name: Upload checksums
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          gh release upload "$TAG" SHA-256SUMS \
+            --repo "${{ github.repository }}" \
+            --clobber
