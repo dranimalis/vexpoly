@@ -103,3 +103,50 @@ def test_asset_resolver_prefers_source_assets(tmp_path):
         user_base=str(tmp_path / "user"),
     )
     assert resolved == str(source_assets)
+
+
+def test_settings_round_trip_creates_parent_directory(tmp_path, monkeypatch):
+    settings_path = tmp_path / "nested" / "user-data" / "settings.json"
+    monkeypatch.setattr(game, "SETTINGS_PATH", str(settings_path))
+    monkeypatch.setattr(game, "LEGACY_SETTINGS_PATH", str(tmp_path / "missing.json"))
+
+    original = dict(game.S)
+    try:
+        game.S["fov"] = 91
+        game.S["theme"] = 2
+        game.save_settings()
+        assert settings_path.is_file()
+
+        game.S["fov"] = 78
+        game.S["theme"] = 0
+        game.load_settings()
+        assert game.S["fov"] == 91
+        assert game.S["theme"] == 2
+    finally:
+        game.S.clear()
+        game.S.update(original)
+
+
+def test_legacy_settings_are_migrated(tmp_path, monkeypatch):
+    import json
+
+    legacy_path = tmp_path / "old-install" / "vexpoly_save.json"
+    settings_path = tmp_path / "user-data" / "vexpoly_save.json"
+    legacy_path.parent.mkdir(parents=True)
+    legacy_path.write_text(json.dumps({"fov": 88, "theme": 1}), encoding="utf-8")
+    monkeypatch.setattr(game, "SETTINGS_PATH", str(settings_path))
+    monkeypatch.setattr(game, "LEGACY_SETTINGS_PATH", str(legacy_path))
+
+    original = dict(game.S)
+    try:
+        game.S.clear()
+        game.S.update(game.DEFAULT_SETTINGS)
+        game.load_settings()
+        assert game.S["fov"] == 88
+        assert game.S["theme"] == 1
+        assert settings_path.is_file()
+        migrated = json.loads(settings_path.read_text(encoding="utf-8"))
+        assert migrated["fov"] == 88
+    finally:
+        game.S.clear()
+        game.S.update(original)

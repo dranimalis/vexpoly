@@ -215,6 +215,16 @@ Actual performance depends on CPU speed, screen resolution, scene complexity, an
 
 ## Installation
 
+### Standalone releases
+
+Prebuilt standalone builds for Windows, macOS, and Linux are published on the
+[GitHub Releases page](https://github.com/dranimalis/vexpoly/releases). Download
+the archive for your operating system and extract it before launching the game.
+The release executable includes the runtime assets; Python does not need to be
+installed separately for these builds.
+
+If no release is published yet, use the source installation steps below.
+
 ### Requirements
 
 - Python 3.9 or newer.
